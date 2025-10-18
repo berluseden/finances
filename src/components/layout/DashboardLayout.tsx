@@ -13,6 +13,7 @@ import {
   Download,
   Moon,
   Sun,
+  Shield,
 } from 'lucide-react';
 import { Button } from '../ui/Button';
 
@@ -23,7 +24,7 @@ interface DashboardLayoutProps {
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
-  const { signOut, currentUser } = useAuth();
+  const { signOut, currentUser, isAdmin } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -44,6 +45,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     { path: '/transactions', icon: Receipt, label: 'Transacciones' },
     { path: '/recurring', icon: Repeat, label: 'Recurrentes' },
   ];
+
+  const adminMenuItems = isAdmin
+    ? [{ path: '/admin', icon: Shield, label: 'Administración' }]
+    : [];
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -91,6 +96,32 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 </Link>
               );
             })}
+            
+            {/* Admin menu items */}
+            {adminMenuItems.length > 0 && (
+              <>
+                <div className="border-t border-gray-200 dark:border-gray-700 my-2"></div>
+                {adminMenuItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = location.pathname === item.path;
+                  return (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      onClick={() => setSidebarOpen(false)}
+                      className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                        isActive
+                          ? 'bg-primary text-white'
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                      }`}
+                    >
+                      <Icon className="w-5 h-5" />
+                      <span className="font-medium">{item.label}</span>
+                    </Link>
+                  );
+                })}
+              </>
+            )}
           </nav>
 
           {/* User info and actions */}

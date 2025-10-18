@@ -1,6 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { LoginPage } from '@/modules/auth/LoginPage';
-import { RegisterPage } from '@/modules/auth/RegisterPage';
 import { ProtectedRoute } from '@/modules/auth/ProtectedRoute';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { DashboardPage } from '@/modules/dashboard/DashboardPage';
@@ -9,6 +8,7 @@ import { AccountsPage } from '@/modules/accounts/AccountsPage';
 import { AccountWizard } from '@/modules/accounts/AccountWizard';
 import { TransactionsPage } from '@/modules/transactions/TransactionsPage';
 import { RecurringPage } from '@/modules/recurring/RecurringPage';
+import { AdminPage } from '@/modules/admin/AdminPage';
 import { useAuth } from '@/modules/auth/AuthContext';
 import { useEffect, useState } from 'react';
 
@@ -40,10 +40,6 @@ function App() {
       <Routes>
         <Route path="/login" element={currentUser ? <Navigate to="/" replace /> : <LoginPage />} />
         <Route
-          path="/register"
-          element={currentUser ? <Navigate to="/" replace /> : <RegisterPage />}
-        />
-        <Route
           path="/*"
           element={
             <ProtectedRoute>
@@ -55,6 +51,7 @@ function App() {
                   <Route path="/accounts/new" element={<AccountWizard />} />
                   <Route path="/transactions" element={<TransactionsPage />} />
                   <Route path="/recurring" element={<RecurringPage />} />
+                  <Route path="/admin" element={<AdminPage />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </DashboardLayout>
