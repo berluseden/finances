@@ -1,14 +1,19 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { LoginPage } from '@/modules/auth/LoginPage';
+import { RegisterPage } from '@/modules/auth/RegisterPage';
 import { ProtectedRoute } from '@/modules/auth/ProtectedRoute';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { DashboardPage } from '@/modules/dashboard/DashboardPage';
 import { CalendarPage } from '@/modules/calendar/CalendarPage';
 import { AccountsPage } from '@/modules/accounts/AccountsPage';
 import { AccountWizard } from '@/modules/accounts/AccountWizard';
+import { AccountDetail } from '@/modules/accounts/AccountDetail';
 import { TransactionsPage } from '@/modules/transactions/TransactionsPage';
 import { RecurringPage } from '@/modules/recurring/RecurringPage';
+import { CategoriesPage } from '@/modules/categories/CategoriesPage';
+import { BudgetsPage } from '@/modules/budgets/BudgetsPage';
 import { AdminPage } from '@/modules/admin/AdminPage';
+import { AIInsightsPage } from '@/modules/ai/AIInsightsPage';
 import { useAuth } from '@/modules/auth/AuthContext';
 import { useEffect, useState } from 'react';
 
@@ -39,6 +44,7 @@ function App() {
       )}
       <Routes>
         <Route path="/login" element={currentUser ? <Navigate to="/" replace /> : <LoginPage />} />
+        <Route path="/register" element={currentUser ? <Navigate to="/" replace /> : <RegisterPage />} />
         <Route
           path="/*"
           element={
@@ -49,8 +55,12 @@ function App() {
                   <Route path="/calendar" element={<CalendarPage />} />
                   <Route path="/accounts" element={<AccountsPage />} />
                   <Route path="/accounts/new" element={<AccountWizard />} />
+                  <Route path="/accounts/:accountId" element={<AccountDetail />} />
                   <Route path="/transactions" element={<TransactionsPage />} />
                   <Route path="/recurring" element={<RecurringPage />} />
+                  <Route path="/categories" element={<CategoriesPage />} />
+                  <Route path="/budgets" element={<BudgetsPage />} />
+                  <Route path="/ai-insights" element={<AIInsightsPage />} />
                   <Route path="/admin" element={<AdminPage />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>

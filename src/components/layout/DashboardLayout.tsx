@@ -14,6 +14,9 @@ import {
   Moon,
   Sun,
   Shield,
+  Tag,
+  TrendingUp,
+  Brain,
 } from 'lucide-react';
 import { Button } from '../ui/Button';
 
@@ -44,6 +47,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     { path: '/accounts', icon: CreditCard, label: 'Cuentas' },
     { path: '/transactions', icon: Receipt, label: 'Transacciones' },
     { path: '/recurring', icon: Repeat, label: 'Recurrentes' },
+    { path: '/categories', icon: Tag, label: 'Categorías' },
+    { path: '/budgets', icon: TrendingUp, label: 'Presupuestos' },
+    { path: '/ai-insights', icon: Brain, label: 'Análisis IA', highlight: true },
   ];
 
   const adminMenuItems = isAdmin
@@ -80,19 +86,29 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             {menuItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
+              const isHighlighted = (item as any).highlight;
               return (
                 <Link
                   key={item.path}
                   to={item.path}
                   onClick={() => setSidebarOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
                     isActive
-                      ? 'bg-primary text-white'
+                      ? isHighlighted
+                        ? 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white shadow-lg'
+                        : 'bg-primary text-white'
+                      : isHighlighted
+                      ? 'bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950/20 dark:to-indigo-950/20 text-purple-700 dark:text-purple-300 hover:from-purple-100 hover:to-indigo-100 dark:hover:from-purple-900/30 dark:hover:to-indigo-900/30 border border-purple-200 dark:border-purple-800'
                       : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                   }`}
                 >
                   <Icon className="w-5 h-5" />
                   <span className="font-medium">{item.label}</span>
+                  {isHighlighted && !isActive && (
+                    <span className="ml-auto px-2 py-0.5 bg-purple-500 text-white text-xs font-bold rounded-full">
+                      IA
+                    </span>
+                  )}
                 </Link>
               );
             })}

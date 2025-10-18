@@ -48,7 +48,15 @@ Una aplicación web progresiva (PWA) moderna e instalable para gestionar finanza
 
 3. **Crear primer usuario admin**
    
-   Después del primer registro, actualiza manualmente el rol en Firestore:
+   ⚠️ **IMPORTANTE**: Esta app NO tiene registro público. Solo admins crean usuarios.
+   
+   Sigue la guía detallada en [`SETUP_USERS.md`](./SETUP_USERS.md) o usa el helper:
+   
+   ```bash
+   node scripts/create-admin.js
+   ```
+   
+   El script te guiará paso a paso para crear el usuario en Firebase Console.
    ```
    users/{uid} → role: "admin"
    ```

@@ -2,6 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './modules/auth/AuthContext';
 import App from './app/App';
 import './styles/globals.css';
@@ -74,5 +75,34 @@ createRoot(document.getElementById('root')!).render(
         </AuthProvider>
       </BrowserRouter>
     </QueryClientProvider>
+    <Toaster 
+      position="top-right"
+      toastOptions={{
+        duration: 4000,
+        style: {
+          background: '#1f2937',
+          color: '#f3f4f6',
+          borderRadius: '8px',
+          fontSize: '14px',
+        },
+        success: {
+          duration: 3000,
+          iconTheme: {
+            primary: '#10b981',
+            secondary: '#fff',
+          },
+        },
+        error: {
+          duration: 5000,
+          iconTheme: {
+            primary: '#ef4444',
+            secondary: '#fff',
+          },
+        },
+        loading: {
+          duration: Infinity,
+        },
+      }}
+    />
   </StrictMode>
 );

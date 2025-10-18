@@ -139,3 +139,26 @@ export function formatRelative(date: Date | Timestamp): string {
   if (diffDays > 0) return `Hace ${diffDays} días`;
   return `En ${Math.abs(diffDays)} días`;
 }
+
+/**
+ * Calculate statement dates based on account's cut day and offset
+ * Used as fallback when AI extraction fails
+ */
+export function calculateStatementDates(cutDay: number, dueDaysOffset: number): {
+  cutDate: Timestamp;
+  dueDate: Timestamp;
+} {
+  // Get last month (statements are usually for the previous period)
+  const lastMonth = dayjs().subtract(1, 'month');
+  
+  // Calculate cut date
+  const cutDate = lastMonth.date(cutDay).toDate();
+  
+  // Calculate due date
+  const dueDate = dayjs(cutDate).add(dueDaysOffset, 'day').toDate();
+  
+  return {
+    cutDate: Timestamp.fromDate(cutDate),
+    dueDate: Timestamp.fromDate(dueDate)
+  };
+}

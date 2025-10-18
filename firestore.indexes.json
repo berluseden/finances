@@ -32,6 +32,23 @@
         { "fieldPath": "userId", "order": "ASCENDING" },
         { "fieldPath": "date", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "recurringPayments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "day", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "recurringPayments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "active", "order": "ASCENDING" },
+        { "fieldPath": "day", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

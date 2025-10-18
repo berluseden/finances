@@ -81,6 +81,10 @@ export interface Statement {
   minimumPaymentUSD?: number;
   statementPdfPath?: string;
   isPaid: boolean;
+  // Campos de extracción con AI
+  aiExtracted?: boolean; // Si los datos fueron extraídos por OpenAI
+  aiConfidence?: 'high' | 'medium' | 'low'; // Nivel de confianza de la extracción
+  aiNotes?: string; // Notas del proceso de extracción
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }
