@@ -20,7 +20,8 @@ const queryClient = new QueryClient({
 });
 
 // Register service worker for PWA
-if ('serviceWorker' in navigator) {
+// Note: Service Worker only works in production build or with HTTPS
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
   window.addEventListener('load', () => {
     navigator.serviceWorker
       .register('/sw.js')
@@ -62,7 +63,12 @@ window.addEventListener('appinstalled', () => {
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
+      <BrowserRouter
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true,
+        }}
+      >
         <AuthProvider>
           <App />
         </AuthProvider>

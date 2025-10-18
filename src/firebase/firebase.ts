@@ -22,8 +22,11 @@ export const db = getFirestore(app);
 export const storage = getStorage(app);
 
 // Enable Firestore offline persistence for PWA
-// This enables IndexedDB caching for offline support
-enableIndexedDbPersistence(db).catch((err) => {
+// Using enableIndexedDbPersistence for compatibility
+// Note: In production, consider using persistentCacheIndexManager from modular API
+enableIndexedDbPersistence(db, {
+  forceOwnership: false // Allow multiple tabs
+}).catch((err: { code: string }) => {
   if (err.code === 'failed-precondition') {
     console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time.');
   } else if (err.code === 'unimplemented') {
