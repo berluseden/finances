@@ -1,11 +1,9 @@
 import { useState } from 'react';
-import toast from 'react-hot-toast';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
-import { Timestamp } from 'firebase/firestore';
 import {
   Clock,
   Plus,
@@ -18,52 +16,20 @@ import {
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/currency';
 import { Currency, RecurringPayment } from '@/types/models';
-
-// Mock data for now - in a real app this would come from a hook
-const mockRecurringPayments: RecurringPayment[] = [
-  {
-    id: '1',
-    userId: 'user1',
-    name: 'Internet',
-    day: 15,
-    amount: 2500,
-    currency: 'DOP',
-    categoryId: 'services',
-    bank: 'Claro',
-    active: true,
-    createdAt: Timestamp.now(),
-    updatedAt: Timestamp.now(),
-  },
-  {
-    id: '2',
-    userId: 'user1',
-    name: 'Electricidad',
-    day: 10,
-    amount: 1800,
-    currency: 'DOP',
-    categoryId: 'services',
-    bank: 'EDE Este',
-    active: true,
-    createdAt: Timestamp.now(),
-    updatedAt: Timestamp.now(),
-  },
-  {
-    id: '3',
-    userId: 'user1',
-    name: 'Alquiler',
-    day: 1,
-    amount: 15000,
-    currency: 'DOP',
-    categoryId: 'rent',
-    bank: 'Banco Popular',
-    active: true,
-    createdAt: Timestamp.now(),
-    updatedAt: Timestamp.now(),
-  },
-];
+import {
+  useRecurringPayments,
+  useCreateRecurringPayment,
+  useUpdateRecurringPayment,
+  useDeleteRecurringPayment,
+  useToggleRecurringPayment
+} from './hooks/useRecurringPayments';
 
 export function RecurringPage() {
-  const [recurringPayments, setRecurringPayments] = useState<RecurringPayment[]>(mockRecurringPayments);
+  const { data: recurringPayments, isLoading } = useRecurringPayments();
+  const createPayment = useCreateRecurringPayment();
+  const updatePayment = useUpdateRecurringPayment();
+  const deletePayment = useDeleteRecurringPayment();
+  const togglePayment = useToggleRecurringPayment();
   const [showForm, setShowForm] = useState(false);
   const [editingPayment, setEditingPayment] = useState<RecurringPayment | null>(null);
   const [paymentToDelete, setPaymentToDelete] = useState<string | null>(null);
@@ -77,44 +43,31 @@ export function RecurringPage() {
     active: true,
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (editingPayment) {
-      // Update existing payment
-      setRecurringPayments(payments =>
-        payments.map(payment =>
-          payment.id === editingPayment.id
-            ? { ...payment, ...formData, updatedAt: Timestamp.now() }
-            : payment
-        )
-      );
-      toast.success('Pago recurrente actualizado');
-    } else {
-      // Create new payment
-      const newPayment: RecurringPayment = {
-        id: Date.now().toString(),
-        userId: 'user1', // In real app, get from auth
-        ...formData,
-        createdAt: Timestamp.now(),
-        updatedAt: Timestamp.now(),
-      };
-      setRecurringPayments([...recurringPayments, newPayment]);
-      toast.success('Pago recurrente creado');
-    }
+    try {
+      if (editingPayment) {
+        await updatePayment.mutateAsync({ id: editingPayment.id, data: formData });
+      } else {
+        await createPayment.mutateAsync(formData);
+      }
 
-    // Reset form
-    setFormData({
-      name: '',
-      day: 1,
-      amount: 0,
-      currency: 'DOP',
-      categoryId: '',
-      bank: '',
-      active: true,
-    });
-    setShowForm(false);
-    setEditingPayment(null);
+      // Reset form
+      setFormData({
+        name: '',
+        day: 1,
+        amount: 0,
+        currency: 'DOP',
+        categoryId: '',
+        bank: '',
+        active: true,
+      });
+      setShowForm(false);
+      setEditingPayment(null);
+    } catch (error) {
+      console.error('Error saving payment:', error);
+    }
   };
 
   const handleEdit = (payment: RecurringPayment) => {
@@ -131,28 +84,29 @@ export function RecurringPage() {
     setShowForm(true);
   };
 
-  const handleDelete = (id: string) => {
-    setRecurringPayments(payments => payments.filter(payment => payment.id !== id));
-    toast.success('Pago recurrente eliminado');
+  const handleDelete = async (id: string) => {
+    try {
+      await deletePayment.mutateAsync(id);
+      setPaymentToDelete(null);
+    } catch (error) {
+      console.error('Error deleting payment:', error);
+    }
   };
 
-  const toggleActive = (id: string) => {
-    setRecurringPayments(payments =>
-      payments.map(payment =>
-        payment.id === id
-          ? { ...payment, active: !payment.active, updatedAt: Timestamp.now() }
-          : payment
-      )
-    );
-    const payment = recurringPayments.find(p => p.id === id);
+  const toggleActive = async (id: string) => {
+    const payment = recurringPayments?.find(p => p.id === id);
     if (payment) {
-      toast.success(payment.active ? 'Pago pausado' : 'Pago activado');
+      try {
+        await togglePayment.mutateAsync({ id, active: !payment.active });
+      } catch (error) {
+        console.error('Error toggling payment:', error);
+      }
     }
   };
 
   const totalMonthlyAmount = recurringPayments
-    .filter(payment => payment.active)
-    .reduce((total, payment) => total + payment.amount, 0);
+    ?.filter(payment => payment.active)
+    .reduce((total, payment) => total + payment.amount, 0) || 0;
 
   const getNextPaymentDate = (day: number): Date => {
     const today = new Date();
@@ -196,7 +150,7 @@ export function RecurringPage() {
                 {formatCurrency(totalMonthlyAmount, 'DOP')}
               </p>
               <p className="text-sm text-blue-600 dark:text-blue-400">
-                {recurringPayments.filter(p => p.active).length} pagos activos
+                {recurringPayments?.filter(p => p.active).length || 0} pagos activos
               </p>
             </div>
             <DollarSign className="w-12 h-12 text-blue-600 dark:text-blue-400" />
@@ -329,9 +283,18 @@ export function RecurringPage() {
         </Card>
       )}
 
-      {/* Payments List */}
+          {/* Payments List */}
       <div className="grid gap-4">
-        {recurringPayments.map((payment) => {
+        {isLoading && (
+          <Card>
+            <CardContent className="py-12 text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+              <p>Cargando pagos recurrentes...</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {!isLoading && recurringPayments && recurringPayments.length > 0 && recurringPayments.map((payment) => {
           const nextPaymentDate = getNextPaymentDate(payment.day);
           const isOverdue = nextPaymentDate < new Date() && payment.active;
 
@@ -418,7 +381,7 @@ export function RecurringPage() {
         })}
       </div>
 
-      {recurringPayments.length === 0 && (
+      {recurringPayments && recurringPayments.length === 0 && !isLoading && (
         <Card>
           <CardContent className="text-center py-12">
             <Clock className="w-12 h-12 text-muted-foreground mx-auto mb-4" />

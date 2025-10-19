@@ -17,6 +17,7 @@ import {
   Tag,
   TrendingUp,
   Brain,
+  Wallet,
 } from 'lucide-react';
 import { Button } from '../ui/Button';
 
@@ -46,6 +47,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     { path: '/calendar', icon: Calendar, label: 'Calendario' },
     { path: '/accounts', icon: CreditCard, label: 'Cuentas' },
     { path: '/transactions', icon: Receipt, label: 'Transacciones' },
+    { path: '/income', icon: Wallet, label: 'Ingresos' },
     { path: '/recurring', icon: Repeat, label: 'Recurrentes' },
     { path: '/categories', icon: Tag, label: 'Categorías' },
     { path: '/budgets', icon: TrendingUp, label: 'Presupuestos' },

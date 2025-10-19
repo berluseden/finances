@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -13,6 +13,7 @@ import { formatDate } from '@/lib/date';
 
 export function AccountDetail() {
   const { accountId } = useParams<{ accountId: string }>();
+  const navigate = useNavigate();
   const { data: account, isLoading, error } = useAccount(accountId!);
   const { data: statements } = useStatements(accountId!);
   const [showUpload, setShowUpload] = useState(false);
@@ -181,10 +182,12 @@ export function AccountDetail() {
                       <FileText className="w-5 h-5 text-red-500" />
                       <div>
                         <p className="font-medium">
-                          Corte: {statement.cutDate ? formatDate(statement.cutDate.toDate()) : 'N/A'}
+                          Corte: {statement.cutDate ? formatDate(statement.cutDate.toDate()) : 
+                            <span className="text-muted-foreground italic">Sin fecha de corte</span>}
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          Vence: {statement.dueDate ? formatDate(statement.dueDate.toDate()) : 'N/A'}
+                          Vence: {statement.dueDate ? formatDate(statement.dueDate.toDate()) : 
+                            <span className="italic">Sin fecha de vencimiento</span>}
                         </p>
                       </div>
                     </div>
@@ -201,27 +204,33 @@ export function AccountDetail() {
                         </p>
                       )}
                       <div className="flex gap-2 mt-2">
-                        <Button size="sm" variant="outline">
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => navigate(`/transactions?accountId=${account.id}&statementId=${statement.id}`)}
+                          title="Ver transacciones de este estado de cuenta"
+                        >
                           <Eye className="w-4 h-4 mr-1" />
                           Ver
                         </Button>
                         {statement.statementPdfPath && (
-                          <Button size="sm" variant="ghost">
-                            <a
-                              href={statement.statementPdfPath}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-inherit no-underline"
-                            >
+                          <a
+                            href={statement.statementPdfPath}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="Abrir PDF del estado de cuenta"
+                          >
+                            <Button size="sm" variant="ghost">
                               PDF
-                            </a>
-                          </Button>
+                            </Button>
+                          </a>
                         )}
                         <Button 
                           size="sm" 
                           variant="ghost"
                           className="text-red-600 hover:text-red-700 hover:bg-red-50"
                           onClick={() => setStatementToDelete(statement.id)}
+                          title="Eliminar estado de cuenta"
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>

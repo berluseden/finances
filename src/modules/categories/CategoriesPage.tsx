@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Timestamp } from 'firebase/firestore';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import {
   Tag,
   Plus,
@@ -22,55 +22,12 @@ import {
   Phone
 } from 'lucide-react';
 import { Category } from '@/types/models';
-
-// Mock data for now - in a real app this would come from a hook
-const mockCategories: Category[] = [
-  {
-    id: '1',
-    userId: 'user1',
-    name: 'Alimentación',
-    icon: 'Utensils',
-    color: '#ef4444',
-    createdAt: Timestamp.now(),
-    updatedAt: Timestamp.now(),
-  },
-  {
-    id: '2',
-    userId: 'user1',
-    name: 'Transporte',
-    icon: 'Car',
-    color: '#3b82f6',
-    createdAt: Timestamp.now(),
-    updatedAt: Timestamp.now(),
-  },
-  {
-    id: '3',
-    userId: 'user1',
-    name: 'Entretenimiento',
-    icon: 'Gamepad2',
-    color: '#8b5cf6',
-    createdAt: Timestamp.now(),
-    updatedAt: Timestamp.now(),
-  },
-  {
-    id: '4',
-    userId: 'user1',
-    name: 'Servicios',
-    icon: 'Zap',
-    color: '#f59e0b',
-    createdAt: Timestamp.now(),
-    updatedAt: Timestamp.now(),
-  },
-  {
-    id: '5',
-    userId: 'user1',
-    name: 'Salud',
-    icon: 'Heart',
-    color: '#10b981',
-    createdAt: Timestamp.now(),
-    updatedAt: Timestamp.now(),
-  },
-];
+import { 
+  useCategories, 
+  useCreateCategory, 
+  useUpdateCategory, 
+  useDeleteCategory 
+} from './hooks/useCategories';
 
 const iconOptions = [
   { name: 'Home', icon: Home },
@@ -108,47 +65,41 @@ const colorOptions = [
 ];
 
 export function CategoriesPage() {
-  const [categories, setCategories] = useState<Category[]>(mockCategories);
+  const { data: categories, isLoading } = useCategories();
+  const createCategory = useCreateCategory();
+  const updateCategory = useUpdateCategory();
+  const deleteCategory = useDeleteCategory();
+
   const [showForm, setShowForm] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     icon: 'Tag',
     color: '#3b82f6',
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (editingCategory) {
-      // Update existing category
-      setCategories(categories =>
-        categories.map(category =>
-          category.id === editingCategory.id
-            ? { ...category, ...formData, updatedAt: Timestamp.now() }
-            : category
-        )
-      );
-    } else {
-      // Create new category
-      const newCategory: Category = {
-        id: Date.now().toString(),
-        userId: 'user1', // In real app, get from auth
-        ...formData,
-        createdAt: Timestamp.now(),
-        updatedAt: Timestamp.now(),
-      };
-      setCategories([...categories, newCategory]);
-    }
+    try {
+      if (editingCategory) {
+        await updateCategory.mutateAsync({ id: editingCategory.id, data: formData });
+      } else {
+        await createCategory.mutateAsync(formData);
+      }
 
-    // Reset form
-    setFormData({
-      name: '',
-      icon: 'Tag',
-      color: '#3b82f6',
-    });
-    setShowForm(false);
-    setEditingCategory(null);
+      // Reset form
+      setFormData({
+        name: '',
+        icon: 'Tag',
+        color: '#3b82f6',
+      });
+      setShowForm(false);
+      setEditingCategory(null);
+    } catch (error) {
+      console.error('Error saving category:', error);
+    }
   };
 
   const handleEdit = (category: Category) => {
@@ -161,8 +112,13 @@ export function CategoriesPage() {
     setShowForm(true);
   };
 
-  const handleDelete = (id: string) => {
-    setCategories(categories => categories.filter(category => category.id !== id));
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteCategory.mutateAsync(id);
+      setCategoryToDelete(null);
+    } catch (error) {
+      console.error('Error deleting category:', error);
+    }
   };
 
   const getIconComponent = (iconName: string) => {
@@ -275,7 +231,16 @@ export function CategoriesPage() {
 
       {/* Categories Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {categories.map((category) => {
+        {isLoading && (
+          <Card className="col-span-full">
+            <CardContent className="py-12 text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+              <p>Cargando categorías...</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {!isLoading && categories && categories.map((category) => {
           const IconComponent = getIconComponent(category.icon || 'Tag');
 
           return (
@@ -311,7 +276,7 @@ export function CategoriesPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleDelete(category.id)}
+                      onClick={() => setCategoryToDelete(category.id)}
                       className="text-red-600 hover:text-red-700"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -324,7 +289,7 @@ export function CategoriesPage() {
         })}
       </div>
 
-      {categories.length === 0 && (
+      {categories && categories.length === 0 && (
         <Card>
           <CardContent className="text-center py-12">
             <Tag className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
@@ -351,24 +316,40 @@ export function CategoriesPage() {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="text-center">
-              <p className="text-2xl font-bold text-primary">{categories.length}</p>
+              <p className="text-2xl font-bold text-primary">{categories?.length || 0}</p>
               <p className="text-sm text-muted-foreground">Categorías Totales</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-green-600">
-                {categories.filter(c => c.icon).length}
+                {categories?.filter(c => c.icon).length || 0}
               </p>
               <p className="text-sm text-muted-foreground">Con Íconos</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-blue-600">
-                {new Set(categories.map(c => c.color)).size}
+                {categories ? new Set(categories.map(c => c.color)).size : 0}
               </p>
               <p className="text-sm text-muted-foreground">Colores Únicos</p>
             </div>
           </div>
         </CardContent>
       </Card>
+
+      {/* Confirm Delete Dialog */}
+      <ConfirmDialog
+        isOpen={!!categoryToDelete}
+        title="Eliminar Categoría"
+        message="¿Estás seguro que deseas eliminar esta categoría? Esta acción no se puede deshacer."
+        confirmLabel="Eliminar"
+        cancelLabel="Cancelar"
+        variant="danger"
+        onConfirm={() => {
+          if (categoryToDelete) {
+            handleDelete(categoryToDelete);
+          }
+        }}
+        onCancel={() => setCategoryToDelete(null)}
+      />
     </div>
   );
 }

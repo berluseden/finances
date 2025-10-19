@@ -10,6 +10,7 @@ import { AccountWizard } from '@/modules/accounts/AccountWizard';
 import { AccountDetail } from '@/modules/accounts/AccountDetail';
 import { TransactionsPage } from '@/modules/transactions/TransactionsPage';
 import { RecurringPage } from '@/modules/recurring/RecurringPage';
+import { IncomePage } from '@/modules/income/IncomePage';
 import { CategoriesPage } from '@/modules/categories/CategoriesPage';
 import { BudgetsPage } from '@/modules/budgets/BudgetsPage';
 import { AdminPage } from '@/modules/admin/AdminPage';
@@ -57,6 +58,7 @@ function App() {
                   <Route path="/accounts/new" element={<AccountWizard />} />
                   <Route path="/accounts/:accountId" element={<AccountDetail />} />
                   <Route path="/transactions" element={<TransactionsPage />} />
+                  <Route path="/income" element={<IncomePage />} />
                   <Route path="/recurring" element={<RecurringPage />} />
                   <Route path="/categories" element={<CategoriesPage />} />
                   <Route path="/budgets" element={<BudgetsPage />} />

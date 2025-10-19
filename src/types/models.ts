@@ -90,6 +90,27 @@ export interface Statement {
 }
 
 /**
+ * Income types
+ */
+export type IncomeType = 'salary' | 'freelance' | 'bonus' | 'investment' | 'business' | 'other';
+
+export interface Income {
+  id: string;
+  userId: string;
+  source: string; // "Salario Empresa X", "Proyecto Freelance", etc.
+  type: IncomeType;
+  amount: number;
+  currency: Currency;
+  date: Timestamp;
+  recurring: boolean; // Si es ingreso mensual fijo
+  recurringDay?: number; // Día del mes que se recibe (1-31)
+  categoryId?: string;
+  notes?: string;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
+/**
  * Recurring payment types
  */
 export interface RecurringPayment {
@@ -202,6 +223,18 @@ export interface RecurringPaymentFormData {
   categoryId?: string;
   bank?: string;
   active: boolean;
+}
+
+export interface IncomeFormData {
+  source: string;
+  type: IncomeType;
+  amount: number;
+  currency: Currency;
+  date: Date;
+  recurring: boolean;
+  recurringDay?: number;
+  categoryId?: string;
+  notes?: string;
 }
 
 /**

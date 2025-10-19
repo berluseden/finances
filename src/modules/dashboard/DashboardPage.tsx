@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/Button';
 import { useAccounts } from '@/modules/accounts/hooks/useAccounts';
 import { useTransactions } from '@/modules/transactions/hooks/useTransactions';
 import { useRecurringPayments } from '@/modules/recurring/hooks/useRecurringPayments';
+import { useCurrentMonthIncome } from '@/modules/income/hooks/useIncome';
 import { useBudgetProgress } from '@/modules/budgets/hooks/useBudgets';
 import { FinancialAlerts } from '@/modules/ai/components/FinancialAlerts';
 import {
@@ -28,6 +29,7 @@ export function DashboardPage() {
   const { data: accounts } = useAccounts();
   const { data: transactions } = useTransactions();
   const { data: recurringPayments } = useRecurringPayments();
+  const { data: incomeData } = useCurrentMonthIncome();
   const budgetProgress = useBudgetProgress();
   const [currentTime, setCurrentTime] = useState(new Date());
 
@@ -80,13 +82,8 @@ export function DashboardPage() {
            t.type === 'charge';
   }).reduce((total, t) => total + (t.currency === 'DOP' ? t.amount : 0), 0) || 0;
 
-  // Calcular ingresos del mes
-  const monthlyIncome = transactions?.filter(t => {
-    const transactionDate = t.date.toDate();
-    return transactionDate.getMonth() === currentMonth &&
-           transactionDate.getFullYear() === currentYear &&
-           t.type === 'payment';
-  }).reduce((total, t) => total + (t.currency === 'DOP' ? t.amount : 0), 0) || 0;
+  // Calcular ingresos del mes - USAR MÓDULO DE INGRESOS DEDICADO
+  const monthlyIncome = incomeData?.totalDOP || 0;
 
   // Obtener saludo según hora del día
   const getGreeting = () => {
