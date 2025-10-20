@@ -24,17 +24,11 @@ export default defineConfig({
         start_url: '/',
         scope: '/',
         icons: [
+          // Usar favicon como icono de manifest para evitar errores por recursos inexistentes
           {
-            src: '/icons/icon-192.png',
-            sizes: '192x192',
-            type: 'image/png',
-            purpose: 'any maskable'
-          },
-          {
-            src: '/icons/icon-512.png',
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'any maskable'
+            src: '/favicon.ico',
+            sizes: '48x48',
+            type: 'image/x-icon'
           }
         ]
       },

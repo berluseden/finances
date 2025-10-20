@@ -57,7 +57,8 @@ export function StatementUpload({ accountId, onClose, onSuccess }: StatementUplo
       toast.dismiss(uploadToast);
       
       if (result.aiExtracted) {
-        toast.success(`Estado de cuenta procesado con IA (Confianza: ${result.extractedData?.confidence})`, {
+        const imported = (result as any).createdTransactions || 0;
+        toast.success(`Estado de cuenta procesado con IA (Confianza: ${result.extractedData?.confidence})${imported ? ` • ${imported} transacciones importadas` : ''}`, {
           duration: 5000,
         });
       } else {

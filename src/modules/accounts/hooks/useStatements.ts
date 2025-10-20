@@ -5,6 +5,9 @@ import { storage } from '@/firebase/firebase';
 import { Timestamp } from 'firebase/firestore';
 import { useAuth } from '@/modules/auth/AuthContext';
 import { extractStatementData, type StatementData } from '@/lib/openai';
+import { readPDF } from '@/services/ai/pdf-reader';
+import { createDocument as createDocHelper } from '@/firebase/firestore';
+import type { Transaction } from '@/types/models';
 import type { Statement } from '@/types/models';
 
 // Hook para obtener statements de una cuenta
@@ -65,14 +68,21 @@ export function useUploadStatement() {
 
       console.log('[useStatements] ✅ PDF subido exitosamente:', downloadURL);
 
-      let extractedData: StatementData | null = null;
+  let extractedData: StatementData | null = null;
+  let parsedFromPdf: Awaited<ReturnType<typeof readPDF>> | null = null;
+  let createdTransactionIds: string[] = [];
 
       // Si useAI es true, extraer datos con OpenAI
       if (useAI) {
         console.log('[useStatements] 🤖 Extrayendo datos con OpenAI...');
         try {
+          // 1) Metadatos del estado de cuenta (fechas, saldos, etc.)
           extractedData = await extractStatementData(file);
-          console.log('[useStatements] ✅ Datos extraídos:', extractedData);
+          console.log('[useStatements] ✅ Metadatos extraídos:', extractedData);
+
+          // 2) Transacciones y gastos recurrentes
+          parsedFromPdf = await readPDF(file);
+          console.log('[useStatements] ✅ Transacciones extraídas:', parsedFromPdf.transactions?.length || 0);
         } catch (error) {
           console.error('[useStatements] ❌ Error al extraer datos:', error);
           // Continuar sin datos extraídos
@@ -134,11 +144,46 @@ export function useUploadStatement() {
 
       const statementId = await createDocument('statements', statementData);
 
+      // Si la extracción contiene transacciones (desde readPDF), crearlas y vincular al statement
+      if (parsedFromPdf?.transactions?.length) {
+        const txs = parsedFromPdf.transactions as Array<{
+          date: string;
+          description: string;
+          amount: number;
+          currency: 'DOP' | 'USD';
+          type: 'charge' | 'payment';
+          category?: string;
+        }>;
+
+        for (const tx of txs) {
+          try {
+            const txData: Partial<Transaction> = {
+              userId: currentUser.id,
+              accountId,
+              statementId,
+              // Guardamos Date directamente; el helper agrega timestamps
+              date: Timestamp.fromDate(new Date(tx.date)),
+              description: tx.description?.slice(0, 300) || 'Transacción importada',
+              amount: Number(tx.amount) || 0,
+              currency: (tx.currency as any) || 'DOP',
+              type: (tx.type as any) || 'charge',
+              note: 'Importada desde PDF del estado de cuenta',
+            } as any;
+
+            const id = await createDocHelper('transactions', txData as any);
+            createdTransactionIds.push(id);
+          } catch (err) {
+            console.warn('[useStatements] No se pudo crear transacción importada:', err);
+          }
+        }
+      }
+
       return { 
         statementId, 
         downloadURL, 
         extractedData,
-        aiExtracted: extractedData && extractedData.confidence !== 'low'
+        aiExtracted: !!(extractedData && extractedData.confidence !== 'low') || !!(parsedFromPdf && parsedFromPdf.confidence !== 'low'),
+        createdTransactions: createdTransactionIds.length,
       };
     },
   });

@@ -16,16 +16,28 @@ import { BudgetsPage } from '@/modules/budgets/BudgetsPage';
 import { AdminPage } from '@/modules/admin/AdminPage';
 import { AIInsightsPage } from '@/modules/ai/AIInsightsPage';
 import { useAuth } from '@/modules/auth/AuthContext';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 function App() {
   const { currentUser } = useAuth();
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [showOfflineBanner, setShowOfflineBanner] = useState(!navigator.onLine);
+  const offlineTimerRef = useRef<number | null>(null);
 
   // Monitor online/offline status
   useEffect(() => {
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
+    const handleOnline = () => {
+      // Ocultar banner inmediatamente y limpiar temporizador
+      setShowOfflineBanner(false);
+      if (offlineTimerRef.current) {
+        window.clearTimeout(offlineTimerRef.current);
+        offlineTimerRef.current = null;
+      }
+    };
+    const handleOffline = () => {
+      // Mostrar el banner sólo si se mantiene offline > 2s (evita parpadeos breves)
+      if (offlineTimerRef.current) window.clearTimeout(offlineTimerRef.current);
+      offlineTimerRef.current = window.setTimeout(() => setShowOfflineBanner(true), 2000);
+    };
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
@@ -38,9 +50,15 @@ function App() {
 
   return (
     <>
-      {!isOnline && (
-        <div className="fixed top-0 left-0 right-0 z-50 bg-yellow-500 text-white px-4 py-2 text-center text-sm font-medium">
-          Sin conexión a internet. Los datos se sincronizarán cuando vuelvas a estar en línea.
+      {showOfflineBanner && (
+        <div className="fixed top-0 left-0 right-0 z-50 bg-yellow-500 text-white px-4 py-2 text-center text-sm font-medium flex items-center justify-center gap-3">
+          <span>Sin conexión a internet. Los datos se sincronizarán cuando vuelvas a estar en línea.</span>
+          <button
+            onClick={() => window.location.reload()}
+            className="ml-2 underline decoration-white/80 underline-offset-2 hover:text-white"
+          >
+            Reintentar
+          </button>
         </div>
       )}
       <Routes>

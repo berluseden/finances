@@ -54,6 +54,8 @@ export interface Transaction {
   id: string;
   userId: string;
   accountId: string;
+  // Optional: link transaction to a specific statement import
+  statementId?: string;
   date: Timestamp;
   description: string;
   amount: number;

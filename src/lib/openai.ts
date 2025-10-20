@@ -101,7 +101,7 @@ IMPORTANTE:
 - Sé preciso con los números, son datos financieros críticos`;
 
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o', // Modelo más reciente con capacidad de visión
+      model: 'gpt-5', // Usar GPT-5 con visión
       messages: [
         {
           role: 'user',
@@ -117,8 +117,7 @@ IMPORTANTE:
           ],
         },
       ],
-      max_tokens: 2000,
-      temperature: 0.1, // Baja temperatura para respuestas más consistentes
+      max_completion_tokens: 1500,
     });
 
     const content = response.choices[0]?.message?.content;
@@ -179,7 +178,7 @@ Genera recomendaciones que sean:
 Formato: Array JSON de strings, ejemplo: ["Recomendación 1", "Recomendación 2", ...]`;
 
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: 'gpt-5',
       messages: [
         {
           role: 'system',
@@ -190,8 +189,7 @@ Formato: Array JSON de strings, ejemplo: ["Recomendación 1", "Recomendación 2"
           content: prompt,
         },
       ],
-      max_tokens: 1000,
-      temperature: 0.7,
+      max_completion_tokens: 800,
     });
 
     const content = response.choices[0]?.message?.content;
@@ -242,7 +240,7 @@ Genera un análisis que incluya:
 Sé específico con los números y amigable en el tono.`;
 
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: 'gpt-5',
       messages: [
         {
           role: 'system',
@@ -253,8 +251,7 @@ Sé específico con los números y amigable en el tono.`;
           content: prompt,
         },
       ],
-      max_tokens: 1500,
-      temperature: 0.7,
+      max_completion_tokens: 1200,
     });
 
     return response.choices[0]?.message?.content || 'No se pudo generar el análisis.';
@@ -355,7 +352,7 @@ ESTRATEGIA:
 Sé específico, práctico y motivador. Usa números reales.`;
 
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o',
+      model: 'gpt-5',
       messages: [
         {
           role: 'system',
@@ -367,8 +364,7 @@ Sé específico, práctico y motivador. Usa números reales.`;
         },
       ],
       response_format: { type: 'json_object' },
-      max_tokens: 2000,
-      temperature: 0.3,
+      max_completion_tokens: 1200,
     });
 
     const content = response.choices[0]?.message?.content;
@@ -437,7 +433,7 @@ CATEGORÍAS TÍPICAS EN RD:
 Sé realista: no sugieras eliminar todo, sino reducir inteligentemente (ej: 20-30%).`;
 
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: 'gpt-5',
       messages: [
         {
           role: 'system',
@@ -449,8 +445,7 @@ Sé realista: no sugieras eliminar todo, sino reducir inteligentemente (ej: 20-3
         },
       ],
       response_format: { type: 'json_object' },
-      max_tokens: 1500,
-      temperature: 0.5,
+      max_completion_tokens: 1200,
     });
 
     const content = response.choices[0]?.message?.content;
@@ -513,7 +508,7 @@ EJEMPLOS DE ALERTAS:
 Máximo 5 alertas, priorizadas por importancia.`;
 
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: 'gpt-5',
       messages: [
         {
           role: 'system',
@@ -525,8 +520,7 @@ Máximo 5 alertas, priorizadas por importancia.`;
         },
       ],
       response_format: { type: 'json_object' },
-      max_tokens: 1000,
-      temperature: 0.3,
+      max_completion_tokens: 900,
     });
 
     const content = response.choices[0]?.message?.content;
@@ -601,7 +595,7 @@ METODOLOGÍA:
 Sé conservador en las estimaciones (mejor subestimar que sobrestimar).`;
 
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o',
+      model: 'gpt-5',
       messages: [
         {
           role: 'system',
@@ -613,8 +607,7 @@ Sé conservador en las estimaciones (mejor subestimar que sobrestimar).`;
         },
       ],
       response_format: { type: 'json_object' },
-      max_tokens: 1500,
-      temperature: 0.2,
+      max_completion_tokens: 1200,
     });
 
     const content = response.choices[0]?.message?.content;
@@ -681,7 +674,7 @@ ESCALA:
 Sé honesto pero constructivo. Siempre incluye camino hacia la mejora.`;
 
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o',
+      model: 'gpt-5',
       messages: [
         {
           role: 'system',
@@ -693,8 +686,7 @@ Sé honesto pero constructivo. Siempre incluye camino hacia la mejora.`;
         },
       ],
       response_format: { type: 'json_object' },
-      max_tokens: 2000,
-      temperature: 0.3,
+      max_completion_tokens: 1200,
     });
 
     const content = response.choices[0]?.message?.content;
